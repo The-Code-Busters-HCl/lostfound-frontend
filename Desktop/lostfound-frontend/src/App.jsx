@@ -12,6 +12,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Items from "./pages/Items";
 import CreateItemPage from "./pages/CreateItemPage";
+import UpdateItemPage from "./pages/UpdateItemPage";
 // 🔐 Protected Route
 const PrivateRoute = ({ children }) => {
   return localStorage.getItem("token") ? children : <Navigate to="/login" />;
@@ -29,7 +30,14 @@ function App() {
           <Route path="/login" element={<Login />} />
 
           <Route path="/register" element={<Register />} />
-
+          <Route
+            path="/updateitem/:id"
+            element={
+              <PrivateRoute>
+                <UpdateItemPage />
+              </PrivateRoute>
+            }
+          />
           <Route
             path="/dashboard"
             element={
@@ -42,7 +50,7 @@ function App() {
             path="/createitem"
             element={
               <PrivateRoute>
-                <CreateItemPage/>
+                <CreateItemPage />
               </PrivateRoute>
             }
           />

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Container, Table, Button, Modal, Form, Badge } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 const Items = () => {
-const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const [items, setItems] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -10,6 +10,7 @@ const navigate = useNavigate();
     itemName: "",
     itemLocation: "",
     status: false,
+    seeker: null,
   });
 
   // Native fetch with Token wrapper
@@ -58,23 +59,6 @@ const navigate = useNavigate();
     }
   };
 
-  const handleStatusChange = async (item) => {
-    try {
-      await fetchAPI(`/items/${item.itemId}`, {
-        method: "PATCH",
-        body: JSON.stringify({
-          itemName: item.itemName,
-          itemLocation: item.itemLocation,
-          status: !item.status,
-        }),
-      });
-      fetchItems();
-    } catch (err) {
-      console.error(err);
-      alert("Unauthorized or server error.");
-    }
-  };
-
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this item?")) {
       try {
@@ -102,6 +86,9 @@ const navigate = useNavigate();
             <th>ID</th>
             <th>Item Name</th>
             <th>Location</th>
+            <th>Seeker ID</th>
+            <th>Seeker MobileNo</th>
+            <th>Owner ID</th>
             <th>Status</th>
             <th>Actions</th>
           </tr>
@@ -110,22 +97,43 @@ const navigate = useNavigate();
           {items.map((item) => (
             <tr key={item.itemId}>
               <td>{item.itemId}</td>
-              <td>{item.itemName}</td>
-              <td>{item.itemLocation}</td>
+
+              <td>{item.itemName || "N/A"}</td>
+
+              <td>{item.itemLocation || "N/A"}</td>
+
+              {/* 🔐 Seeker */}
+              <td>
+                {item.seeker
+                  ? `${item.seeker?.name || "N/A"}`
+                  : "No User"}
+              </td>
+              <td>
+                {item.seeker
+                  ? `${item.seeker?.mobileNo || "N/A"}`
+                  : "No User"}
+              </td>
+              {/* 👤 Owner */}
+              <td>{item.owner ? item.owner.userId : "No User"}</td>
+
+              {/* 📊 Status */}
               <td>
                 <Badge bg={item.status ? "success" : "warning"}>
                   {item.status ? "Found/Returned" : "Lost"}
                 </Badge>
               </td>
+
+              {/* ⚙️ Actions */}
               <td>
                 <Button
-                  variant="outline-success"
+                  variant="outline-warning"
                   size="sm"
                   className="me-2"
-                  onClick={() => handleStatusChange(item)}
+                  onClick={() => navigate(`/updateitem/${item.itemId}`)}
                 >
-                  Toggle Status
+                  Update
                 </Button>
+
                 <Button
                   variant="outline-danger"
                   size="sm"
@@ -136,65 +144,18 @@ const navigate = useNavigate();
               </td>
             </tr>
           ))}
+
           {items.length === 0 && (
             <tr>
-              <td colSpan="5" className="text-center">
+              <td colSpan="7" className="text-center">
                 No items reported yet.
               </td>
             </tr>
           )}
         </tbody>
       </Table>
-
-      
     </Container>
   );
 };
 
 export default Items;
-
-
-
-
-
-// <Modal show={showModal} onHide={() => setShowModal(false)}>
-//         <Modal.Header closeButton>
-//           <Modal.Title>Report New Item</Modal.Title>
-//         </Modal.Header>
-//         <Modal.Body>
-//           <Form onSubmit={handleSubmit}>
-//             <Form.Group className="mb-3">
-//               <Form.Label>Item Name</Form.Label>
-//               <Form.Control
-//                 type="text"
-//                 required
-//                 onChange={(e) =>
-//                   setFormData({ ...formData, itemName: e.target.value })
-//                 }
-//               />
-//             </Form.Group>
-//             <Form.Group className="mb-3">
-//               <Form.Label>Location</Form.Label>
-//               <Form.Control
-//                 type="text"
-//                 required
-//                 onChange={(e) =>
-//                   setFormData({ ...formData, itemLocation: e.target.value })
-//                 }
-//               />
-//             </Form.Group>
-//             <Form.Group className="mb-3">
-//               <Form.Check
-//                 type="checkbox"
-//                 label="Found/Returned (Check if not lost)"
-//                 onChange={(e) =>
-//                   setFormData({ ...formData, status: e.target.checked })
-//                 }
-//               />
-//             </Form.Group>
-//             <Button variant="primary" type="submit" className="w-100">
-//               Submit
-//             </Button>
-//           </Form>
-//         </Modal.Body>
-//       </Modal>
