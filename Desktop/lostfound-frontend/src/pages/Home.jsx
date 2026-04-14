@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
   const navigate = useNavigate();
+  const token = localStorage.getItem('token'); // 🔐 check login
 
   return (
     <Container className="mt-5">
@@ -25,20 +26,35 @@ const Home = () => {
               <p>Login or Register to start reporting and browsing items.</p>
 
               <div className="mt-4">
-                <Button
-                  variant="primary"
-                  className="me-3"
-                  onClick={() => navigate('/login')}
-                >
-                  Login
-                </Button>
 
-                <Button
-                  variant="outline-primary"
-                  onClick={() => navigate('/register')}
-                >
-                  Register
-                </Button>
+                {/* 🔐 If logged in */}
+                {token ? (
+                  <Button
+                    variant="success"
+                    onClick={() => navigate('/dashboard')}
+                  >
+                    Go to Dashboard
+                  </Button>
+                ) : (
+                  <>
+                    {/* 🔓 If not logged in */}
+                    <Button
+                      variant="primary"
+                      className="me-3"
+                      onClick={() => navigate('/login')}
+                    >
+                      Login
+                    </Button>
+
+                    <Button
+                      variant="outline-primary"
+                      onClick={() => navigate('/register')}
+                    >
+                      Register
+                    </Button>
+                  </>
+                )}
+
               </div>
 
             </Card.Body>
