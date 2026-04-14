@@ -1,22 +1,29 @@
 import React, { useState } from 'react';
 import { Container, Form, Button, Card, Alert } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
-import api from '../api/api';
 
-const Login = () => {
+const Login = ({ setCurrentPage }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await api.post('/auth/login', { email, password });
-      localStorage.setItem('token', response.data.token);
-      navigate('/items');
+      const response = await fetch('http://localhost:8091/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Invalid email or password');
+      }
+      
+      const data = await response.json();
+      localStorage.setItem('token', data.token);
+      setCurrentPage('dashboard');
     } catch (err) {
-      setError('Invalid email or password');
+      setError(err.message || 'Login failed');
     }
   };
 

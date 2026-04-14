@@ -1,14 +1,11 @@
 import React, { useState } from 'react';
 import { Container, Form, Button, Card, Alert, Row, Col } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
-import api from '../api/api';
 
-const Register = () => {
+const Register = ({ setCurrentPage }) => {
   const [formData, setFormData] = useState({
     name: '', branch: '', year: '', mobileNo: '', email: '', password: '', role: 'USER'
   });
   const [error, setError] = useState('');
-  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -17,16 +14,27 @@ const Register = () => {
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      await api.post('/auth/register', formData);
-      navigate('/login');
+      const response = await fetch('http://localhost:8091/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+      
+      if (!response.ok) {
+         let errorMsg = 'Registration failed.';
+         try {
+             const errorData = await response.json();
+             errorMsg = errorData.message || errorMsg;
+         } catch(e) {
+             const textData = await response.text();
+             errorMsg = textData || errorMsg;
+         }
+         throw new Error(errorMsg);
+      }
+      setCurrentPage('login');
     } catch (err) {
       console.error("Registration error:", err);
-      setError(
-          err.response?.data?.message ||
-          err.response?.data || 
-          err.message || 
-          'Registration failed. Please check your data.'
-      );
+      setError(err.message || 'Registration failed. Please check your data.');
     }
   };
 

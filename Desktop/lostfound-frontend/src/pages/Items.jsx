@@ -1,16 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Table, Button, Modal, Form, Badge } from 'react-bootstrap';
-import api from '../api/api';
 
 const Items = () => {
   const [items, setItems] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({ itemName: '', itemLocation: '', status: false });
 
+  // Native fetch with Token wrapper
+  const fetchAPI = async (endpoint, options = {}) => {
+    const token = localStorage.getItem('token');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch(`http://localhost:8091${endpoint}`, {
+      ...options,
+      headers
+    });
+    
+    if (!res.ok) throw new Error('API request failed');
+    
+    // For DELETE or empty responses
+    const text = await res.text();
+    return text ? JSON.parse(text) : {};
+  };
+
   const fetchItems = async () => {
     try {
-      const res = await api.get('/items/');
-      setItems(res.data);
+      const data = await fetchAPI('/items/');
+      setItems(data);
     } catch (err) {
       console.error(err);
     }
@@ -23,7 +40,10 @@ const Items = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await api.post('/items', formData);
+      await fetchAPI('/items', {
+        method: 'POST',
+        body: JSON.stringify(formData)
+      });
       setShowModal(false);
       setFormData({ itemName: '', itemLocation: '', status: false });
       fetchItems();
@@ -32,22 +52,31 @@ const Items = () => {
     }
   };
 
-  const handleStatusChange = async (id, currentStatus) => {
+  const handleStatusChange = async (item) => {
     try {
-      await api.patch(`/items/${id}`, { status: !currentStatus });
+      await fetchAPI(`/items/${item.itemId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ 
+           itemName: item.itemName,
+           itemLocation: item.itemLocation,
+           status: !item.status 
+        })
+      });
       fetchItems();
     } catch (err) {
       console.error(err);
+      alert("Unauthorized or server error.");
     }
   };
 
   const handleDelete = async (id) => {
     if(window.confirm("Are you sure you want to delete this item?")) {
       try {
-         await api.delete(`/items/${id}`);
+         await fetchAPI(`/items/${id}`, { method: 'DELETE' });
          fetchItems();
       } catch (err) {
          console.error(err);
+         alert("Could not delete item. You are probably not the owner!");
       }
     }
   }
@@ -81,7 +110,7 @@ const Items = () => {
                 </Badge>
               </td>
               <td>
-                <Button variant="outline-success" size="sm" className="me-2" onClick={() => handleStatusChange(item.itemId, item.status)}>
+                <Button variant="outline-success" size="sm" className="me-2" onClick={() => handleStatusChange(item)}>
                   Toggle Status
                 </Button>
                 <Button variant="outline-danger" size="sm" onClick={() => handleDelete(item.itemId)}>

@@ -1,7 +1,7 @@
 import React from 'react';
-import { Container, Row, Col, Card } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button } from 'react-bootstrap';
 
-const Home = () => {
+const Home = ({ setCurrentPage }) => {
   return (
     <Container className="mt-5">
       <Row className="justify-content-center">
@@ -15,6 +15,14 @@ const Home = () => {
               </Card.Text>
               <hr />
               <p>Login or Register to start reporting and browsing items.</p>
+              <div className="mt-4">
+                <Button variant="primary" className="me-3" onClick={() => setCurrentPage('login')}>
+                  Login
+                </Button>
+                <Button variant="outline-primary" onClick={() => setCurrentPage('register')}>
+                  Register
+                </Button>
+              </div>
             </Card.Body>
           </Card>
         </Col>
